@@ -2,58 +2,77 @@
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <style>
 :root{--bg:#f4f6fb;--fg:#1e293b;--card:#fff;--mut:#64748b}@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--card:#1e293b;--mut:#94a3b8}}
-body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:16px;max-width:460px;margin:auto}
-h1{font-size:1.2rem;margin:.2rem 0}p{color:var(--mut);font-size:.85rem;margin:0 0 12px}
-#cam{border-radius:18px;overflow:hidden;background:#000}.res{border-radius:14px;padding:14px;margin:12px 0;font-weight:600;background:var(--card);border-left:6px solid #94a3b8}
-.res.ok{border-color:#10b981;background:#d1fae5;color:#065f46}.res.no{border-color:#e11d48;background:#ffe4e6;color:#9f1239}.res small{display:block;font-weight:500}
-ul{list-style:none;padding:0;font-size:.85rem}li{background:var(--card);padding:8px 12px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between}
+body{margin:0 auto;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:16px;max-width:460px}
+h1{font-size:1.25rem;margin:.2rem 0}p{color:var(--mut);font-size:.85rem;margin:0 0 12px}
+.res{border-radius:14px;padding:16px;margin:12px 0;font-weight:700;background:var(--card);border-left:6px solid #94a3b8}
+.res.ok{border-color:#10b981;background:#d1fae5;color:#065f46}.res.no{border-color:#e11d48;background:#ffe4e6;color:#9f1239}.res small{display:block;font-weight:500;margin-top:2px}
+.row{display:flex;gap:8px;margin:10px 0}.btn{flex:1;text-align:center;padding:14px 10px;border:0;border-radius:14px;background:#4f46e5;color:#fff;font-weight:700;font-size:.95rem;cursor:pointer}.btn.alt{background:#0d9488}
+input[type=text]{flex:1;min-width:0;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:var(--card);color:var(--fg)}
+#cam{border-radius:18px;overflow:hidden;background:#000}video{width:100%;display:block}
+ul{list-style:none;padding:0;font-size:.85rem}li{background:var(--card);padding:8px 12px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
 </style></head><body>
-<h1>📷 Scan Absensi</h1><p>Arahkan QR guru/siswa ke kamera. Guru: scan pertama = masuk, scan kedua = pulang.</p>
-<div id="cam"><video id="v" playsinline muted style="width:100%;display:block"></video></div><canvas id="cv" style="display:none"></canvas><div id="r" class="res">Menunggu QR…</div><button id="rb" style="width:100%;padding:12px;border:0;border-radius:12px;background:#4f46e5;color:#fff;font-weight:700">Buka kamera</button><ul id="log"></ul>
+<h1>📷 Scan Absensi</h1><p>Guru: scan pertama = masuk, scan kedua = pulang. Siswa: otomatis hadir.</p>
+<div id="r" class="res">Pilih cara scan di bawah</div>
+<div class="row"><label class="btn" for="f">📸 Foto QR</label><input id="f" type="file" accept="image/*" capture="environment" hidden><button class="btn alt" id="lv">🎥 Kamera langsung</button></div>
+<div id="cam" hidden><video id="v" playsinline muted></video></div><canvas id="cv" hidden></canvas>
+<div class="row"><input id="m" type="text" placeholder="Atau ketik/tempel kode QR (alat scan USB)" autocomplete="off"><button class="btn" id="mk" style="flex:none">Kirim</button></div>
+<ul id="log"></ul>
 <script>
-const API=https://script.google.com/macros/s/AKfycby_Pvs_nnvnXIVC-Y_d1TQVl67knqY953hiwaphq-QdXZfP5CTh-sJzaHkfnLmFLH3CAQ/exec
-let busy=false,last='';
+const API=https://script.google.com/macros/s/AKfycbwc_8x1yOKJzqNVjDoqELT4VAuqgY1myzV91Kar8tYUQ9Wp7IStcxg-n5gfAhy4iMDlQg/exec
 const $=s=>document.querySelector(s);
+let busy=false,stream=null,raf=0;
 const beep=ok=>{try{const c=new AudioContext(),o=c.createOscillator();o.frequency.value=ok?880:220;o.connect(c.destination);o.start();setTimeout(()=>o.stop(),150)}catch{}};
-async function onScan(code){
- if(busy||code===last)return;busy=true;last=code;$('#r').className='res';$('#r').textContent='Memproses…';
- try{if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API))throw new Error('URL API belum diisi / salah (harus berakhiran /exec)');
+const show=(k,h)=>{$('#r').className='res '+k;$('#r').innerHTML=h};
+
+async function send(code){
+ code=String(code).trim();const u=code.match(/[?&]c=([^&]+)/);if(u)code=decodeURIComponent(u[1]);
+ if(!code||busy)return;busy=true;show('','Memproses…');
+ try{
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(API))throw new Error('URL API belum diisi (harus berakhiran /exec)');
   const r=await(await fetch(API,{method:'POST',body:JSON.stringify({code})})).json();
-  $('#r').className='res '+(r.ok?'ok':'no');$('#r').innerHTML=`${r.ok?'✅':'⚠️'} ${r.nama||''}<small>${r.jenis||''} ${r.msg}</small>`;beep(r.ok);
-  const li=document.createElement('li');li.innerHTML=`<span>${r.nama||'-'}</span><span>${r.msg}</span>`;$('#log').prepend(li)}
- catch(e){$('#r').className='res no';$('#r').innerHTML='Gagal terhubung ke server<small>'+e.message+'</small>'}
- setTimeout(()=>busy=false,1500);setTimeout(()=>last='',6000);
+  show(r.ok?'ok':'no',`${r.ok?'✅':'⚠️'} ${r.nama||''}<small>${r.jenis||''} ${r.msg}</small>`);beep(r.ok);
+  const li=document.createElement('li');li.innerHTML=`<span>${r.nama||'-'}</span><span>${r.msg}</span>`;$('#log').prepend(li);
+ }catch(e){show('no','Gagal terhubung ke server<small>'+e.message+'</small>')}
+ setTimeout(()=>busy=false,1500);
 }
-let stream=null,raf=0;
-const v=$('#v'),cv=$('#cv'),cx=cv.getContext('2d',{willReadFrequently:true});
-const err=(t,d)=>{$('#r').className='res no';$('#r').innerHTML=t+'<small>'+d+'</small>';$('#rb').style.display='block'};
-function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}v.srcObject=null}
-function tick(){
- if(stream&&v.readyState>=2&&v.videoWidth){
-  cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);
-  const c=window.jsQR&&jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
-  if(c&&c.data)onScan(c.data);
- }
- raf=requestAnimationFrame(tick);
-}
-async function startCam(){
- stopCam();
- if(/FBAN|FBAV|Instagram|Line\/|MicroMessenger|; wv\)|WhatsApp/i.test(navigator.userAgent))return err('Browser dalam aplikasi tidak mendukung kamera','Buka link ini di Chrome atau Safari (menu ⋮ → Buka di browser).');
- if(!window.isSecureContext||!navigator.mediaDevices)return err('Halaman harus HTTPS','Buka lewat alamat https://… GitHub Pages.');
- if(!window.jsQR)return err('Library QR gagal dimuat','Periksa internet lalu muat ulang.');
- $('#r').className='res';$('#r').textContent='Membuka kamera…';
- const tries=[{video:{facingMode:{ideal:'environment'}},audio:false},{video:true,audio:false}];
- for(const k of tries){
-  try{stream=await navigator.mediaDevices.getUserMedia(k);break}
-  catch(e){if(k===tries[1]){
-   const m={NotAllowedError:'Izin kamera ditolak. Ketuk ikon gembok/kamera di address bar → Izinkan, lalu muat ulang.',NotReadableError:'Kamera sedang dipakai aplikasi/tab lain. Tutup lalu coba lagi.',NotFoundError:'Kamera tidak ditemukan.'};
-   return err('Kamera gagal dibuka ('+e.name+')',m[e.name]||e.message)}}
- }
- v.srcObject=stream;try{await v.play()}catch{}
- $('#rb').style.display='none';$('#r').textContent='Menunggu QR…';tick();
-}
-$('#rb').onclick=startCam;
-document.addEventListener('visibilitychange',()=>document.hidden?stopCam():startCam());
+
+/* 1) Foto QR memakai kamera bawaan HP (tanpa izin kamera di browser) */
+$('#f').onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;show('','Membaca foto…');
+ try{
+  const bmp=await createImageBitmap(file),cv=$('#cv'),cx=cv.getContext('2d',{willReadFrequently:true});
+  for(const w of [1000,600,1600]){
+   const k=Math.min(1,w/Math.max(bmp.width,bmp.height));cv.width=Math.round(bmp.width*k);cv.height=Math.round(bmp.height*k);
+   cx.drawImage(bmp,0,0,cv.width,cv.height);
+   const c=jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height,{inversionAttempts:'attemptBoth'});
+   if(c&&c.data){e.target.value='';return send(c.data)}
+  }
+  if('BarcodeDetector' in window){const r=await new BarcodeDetector({formats:['qr_code']}).detect(bmp);if(r[0]){e.target.value='';return send(r[0].rawValue)}}
+  show('no','QR tidak terbaca<small>Foto lebih dekat, terang, dan pastikan QR memenuhi bingkai.</small>');
+ }catch(err){show('no','Foto gagal diproses<small>'+err.message+'</small>')}
+ e.target.value='';
+};
+
+/* 2) Kamera langsung (opsional) */
+function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#v').srcObject=null;$('#cam').hidden=true;$('#lv').textContent='🎥 Kamera langsung'}
+function tick(){const v=$('#v');
+ if(stream&&v.videoWidth){const cv=$('#cv'),cx=cv.getContext('2d',{willReadFrequently:true});cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);
+  const c=jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height);if(c&&c.data&&!busy)send(c.data)}
+ raf=requestAnimationFrame(tick)}
+$('#lv').onclick=async()=>{
+ if(stream)return stopCam();
+ if(!window.isSecureContext||!navigator.mediaDevices)return show('no','Kamera langsung tidak tersedia<small>Pakai tombol “Foto QR”.</small>');
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+  const v=$('#v');v.srcObject=stream;await v.play();$('#cam').hidden=false;$('#lv').textContent='⏹ Matikan kamera';show('','Arahkan ke QR…');tick()}
+ catch(e){stream=null;show('no',`Kamera langsung gagal (${e.name})<small>Gunakan tombol “Foto QR” sebagai gantinya.</small>`)}
+};
 addEventListener('pagehide',stopCam);
-startCam();
+
+/* 3) Ketik/tempel kode atau alat scan USB */
+$('#mk').onclick=()=>{send($('#m').value);$('#m').value=''};
+$('#m').onkeydown=e=>{if(e.key==='Enter')$('#mk').click()};
+
+/* 4) QR berisi link: scan dengan kamera bawaan HP -> halaman ini terbuka & langsung absen */
+const q=new URLSearchParams(location.search).get('c');
+if(q){history.replaceState(null,'',location.pathname);send(q)}
 </script></body></html>
