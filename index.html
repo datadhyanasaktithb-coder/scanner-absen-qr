@@ -11,7 +11,7 @@ ul{list-style:none;padding:0;font-size:.85rem}li{background:var(--card);padding:
 <h1>📷 Scan Absensi</h1><p>Arahkan QR guru/siswa ke kamera. Guru: scan pertama = masuk, scan kedua = pulang.</p>
 <div id="cam"></div><div id="r" class="res">Menunggu QR…</div><button id="rb" style="display:none;width:100%;padding:12px;border:0;border-radius:12px;background:#4f46e5;color:#fff;font-weight:700">Buka ulang kamera</button><ul id="log"></ul>
 <script>
-const API='GANTI_DENGAN_URL_WEB_APP_APPS_SCRIPT'; // https://script.google.com/macros/s/XXXX/exec
+const API=https://script.google.com/macros/s/AKfycby_Pvs_nnvnXIVC-Y_d1TQVl67knqY953hiwaphq-QdXZfP5CTh-sJzaHkfnLmFLH3CAQ/exec
 let busy=false,last='';
 const $=s=>document.querySelector(s);
 const beep=ok=>{try{const c=new AudioContext(),o=c.createOscillator();o.frequency.value=ok?880:220;o.connect(c.destination);o.start();setTimeout(()=>o.stop(),150)}catch{}};
