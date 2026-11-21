@@ -1,24 +1,36 @@
 <!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scan Absensi · SMK Taruna Harapan Bangsa</title>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f6fb;--fg:#1e293b;--card:#fff;--mut:#64748b}@media(prefers-color-scheme:dark){:root{--bg:#0f172a;--fg:#e2e8f0;--card:#1e293b;--mut:#94a3b8}}
-body{margin:0 auto;font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);padding:16px;max-width:460px}
-h1{font-size:1.25rem;margin:.2rem 0}p{color:var(--mut);font-size:.85rem;margin:0 0 12px}
-.res{border-radius:14px;padding:16px;margin:12px 0;font-weight:700;background:var(--card);border-left:6px solid #94a3b8}
-.res.ok{border-color:#10b981;background:#d1fae5;color:#065f46}.res.no{border-color:#e11d48;background:#ffe4e6;color:#9f1239}.res small{display:block;font-weight:500;margin-top:2px}
-.row{display:flex;gap:8px;margin:10px 0}.btn{flex:1;text-align:center;padding:14px 10px;border:0;border-radius:14px;background:#4f46e5;color:#fff;font-weight:700;font-size:.95rem;cursor:pointer}.btn.alt{background:#0d9488}
-input[type=text]{flex:1;min-width:0;padding:12px;border-radius:12px;border:1px solid #cbd5e1;background:var(--card);color:var(--fg)}
-#cam{border-radius:18px;overflow:hidden;background:#000}video{width:100%;display:block}
-ul{list-style:none;padding:0;font-size:.85rem}li{background:var(--card);padding:8px 12px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px}
+:root{--bg:#f4f6fb;--fg:#1e293b;--card:#fff;--mut:#64748b;--bd:#e8ecf6}@media(prefers-color-scheme:dark){:root{--bg:#0b1020;--fg:#e2e8f0;--card:#161e33;--mut:#94a3b8;--bd:#263150}}
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh}
+.hero{background:linear-gradient(135deg,#4f46e5,#7c3aed 60%,#2dd4bf);color:#fff;padding:26px 20px 64px;border-radius:0 0 30px 30px}
+.hi{max-width:460px;margin:auto;display:flex;gap:14px;align-items:center}
+.logo{width:48px;height:48px;border-radius:15px;background:rgba(255,255,255,.2);display:grid;place-items:center;font-size:24px;flex:none}
+.hero h1{margin:0;font-size:1.1rem;font-weight:800}.hero p{margin:3px 0 0;font-size:.76rem;opacity:.88;color:#fff}
+.wrap{max-width:460px;margin:-42px auto 0;padding:0 16px 28px;position:relative}
+.res{border-radius:18px;padding:16px 18px;margin:0 0 12px;font-weight:700;background:var(--card);border:1px solid var(--bd);box-shadow:0 14px 30px -18px rgba(79,70,229,.45)}
+.res.ok{background:#d1fae5;border-color:#6ee7b7;color:#065f46}.res.no{background:#ffe4e6;border-color:#fda4af;color:#9f1239}.res small{display:block;font-weight:500;margin-top:3px;opacity:.9}
+.row{display:flex;gap:10px;margin:10px 0}
+.btn{flex:1;text-align:center;padding:14px 10px;border:0;border-radius:16px;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;font:700 .92rem 'Plus Jakarta Sans',system-ui,sans-serif;cursor:pointer;box-shadow:0 10px 18px -10px rgba(79,70,229,.8);transition:.15s}
+.btn:active{transform:scale(.98)}.btn.alt{background:linear-gradient(135deg,#14b8a6,#0d9488);box-shadow:0 10px 18px -10px rgba(13,148,136,.8)}
+input[type=text]{flex:1;min-width:0;padding:13px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;font-size:.88rem}
+input[type=text]:focus{outline:0;border-color:#818cf8;box-shadow:0 0 0 4px rgba(99,102,241,.18)}
+#cam{position:relative;border-radius:22px;overflow:hidden;background:#000;box-shadow:0 18px 36px -18px rgba(0,0,0,.6)}video{width:100%;display:block}
+.frame{position:absolute;inset:16%;border:3px solid rgba(45,212,191,.95);border-radius:20px;box-shadow:0 0 0 999px rgba(8,12,30,.42);pointer-events:none}
+.frame::after{content:'';position:absolute;left:6%;right:6%;height:2px;background:#2dd4bf;box-shadow:0 0 12px #2dd4bf;animation:sc 2.2s ease-in-out infinite}
+@keyframes sc{0%,100%{top:8%}50%{top:90%}}
+ul{list-style:none;padding:0;margin:14px 0 0;font-size:.85rem}li{background:var(--card);border:1px solid var(--bd);padding:10px 14px;border-radius:14px;margin-bottom:8px;display:flex;justify-content:space-between;gap:8px}li span:last-child{color:var(--mut)}
 </style></head><body>
-<h1>📷 Scan Absensi</h1><p>Guru: scan pertama = masuk, scan kedua = pulang. Siswa: otomatis hadir.</p>
+<div class="hero"><div class="hi"><div class="logo">📷</div><div><h1>Scan Absensi</h1><p>SMK Taruna Harapan Bangsa · Guru: scan 1 = masuk, scan 2 = pulang</p></div></div></div>
+<div class="wrap">
 <div id="r" class="res">Pilih cara scan di bawah</div>
 <div class="row"><label class="btn" for="f">📸 Foto QR</label><input id="f" type="file" accept="image/*" capture="environment" hidden><button class="btn alt" id="lv">🎥 Kamera langsung</button></div>
-<div id="cam" hidden><video id="v" playsinline muted></video></div><canvas id="cv" hidden></canvas>
+<div id="cam" hidden><video id="v" playsinline muted></video><div class="frame"></div></div><div class="row" id="fr" hidden><button class="btn" id="fl">🔄 Pakai kamera depan</button></div><canvas id="cv" hidden></canvas>
 <div class="row"><input id="m" type="text" placeholder="Atau ketik/tempel kode QR (alat scan USB)" autocomplete="off"><button class="btn" id="mk" style="flex:none">Kirim</button></div>
-<ul id="log"></ul>
+<ul id="log"></ul></div>
 <script>
-const API='https://script.google.com/macros/s/AKfycbwc_8x1yOKJzqNVjDoqELT4VAuqgY1myzV91Kar8tYUQ9Wp7IStcxg-n5gfAhy4iMDlQg/exec'
+const API='https://script.google.com/macros/s/AKfycbwZy08S1GTzsPEvZBkOwiUfSD8WkoJY6a1uRvTWj0F80qfp7ZKH1VKb1bsYKDAUnt8brw/exec'; // https://script.google.com/macros/s/XXXX/exec
 const $=s=>document.querySelector(s);
 let busy=false,stream=null,raf=0;
 const beep=ok=>{try{const c=new AudioContext(),o=c.createOscillator();o.frequency.value=ok?880:220;o.connect(c.destination);o.start();setTimeout(()=>o.stop(),150)}catch{}};
@@ -54,18 +66,32 @@ $('#f').onchange=async e=>{
 };
 
 /* 2) Kamera langsung (opsional) */
-function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#v').srcObject=null;$('#cam').hidden=true;$('#lv').textContent='🎥 Kamera langsung'}
+function stopCam(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#v').srcObject=null;$('#cam').hidden=true;$('#fr').hidden=true;$('#lv').textContent='🎥 Kamera langsung'}
 function tick(){const v=$('#v');
  if(stream&&v.videoWidth){const cv=$('#cv'),cx=cv.getContext('2d',{willReadFrequently:true});cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);
   const c=jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height);if(c&&c.data&&!busy)send(c.data)}
  raf=requestAnimationFrame(tick)}
-$('#lv').onclick=async()=>{
- if(stream)return stopCam();
- if(!window.isSecureContext||!navigator.mediaDevices)return show('no','Kamera langsung tidak tersedia<small>Pakai tombol “Foto QR”.</small>');
- try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-  const v=$('#v');v.srcObject=stream;await v.play();$('#cam').hidden=false;$('#lv').textContent='⏹ Matikan kamera';show('','Arahkan ke QR…');tick()}
- catch(e){stream=null;show('no',`Kamera langsung gagal (${e.name})<small>Gunakan tombol “Foto QR” sebagai gantinya.</small>`)}
-};
+let facing='environment';
+const no=(t,d)=>show('no',t+'<small>'+d+'</small>');
+async function openCam(){
+ cancelAnimationFrame(raf);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
+ if(/FBAN|FBAV|Instagram|Line\/|MicroMessenger|; wv\)|WhatsApp|Telegram|TikTok/i.test(navigator.userAgent))return no('Browser dalam aplikasi memblokir kamera','Ketuk ⋮ → “Buka di Chrome/Safari”, atau pakai tombol Foto QR.');
+ if(!window.isSecureContext||!navigator.mediaDevices)return no('Kamera langsung tidak tersedia di browser ini','Pakai tombol Foto QR.');
+ show('','Membuka kamera… izinkan jika diminta');
+ const to=setTimeout(()=>no('Kamera tidak merespons','Mungkin dipakai aplikasi/tab lain atau diblokir sistem. Coba lagi atau pakai Foto QR.'),8000);
+ let err;
+ for(const c of [{facingMode:{exact:facing}},{facingMode:{ideal:facing}},true]){
+  try{stream=await navigator.mediaDevices.getUserMedia({video:c,audio:false});err=null;break}catch(e){err=e;if(e.name==='NotAllowedError')break}
+ }
+ clearTimeout(to);
+ if(err){stream=null;return no(`Kamera gagal dibuka (${err.name})`,{NotAllowedError:'Izin ditolak. Izinkan kamera di pengaturan situs lalu muat ulang.',NotReadableError:'Kamera sedang dipakai aplikasi lain.',NotFoundError:'Tidak ada kamera terdeteksi.'}[err.name]||err.message)}
+ const v=$('#v');v.srcObject=stream;v.style.transform=facing==='user'?'scaleX(-1)':'';$('#cam').hidden=false;
+ try{await v.play()}catch(e){stopCam();return no('Video gagal diputar',e.message)}
+ $('#fr').hidden=false;$('#fl').textContent=facing==='user'?'🔄 Pakai kamera belakang':'🔄 Pakai kamera depan';
+ $('#lv').textContent='⏹ Matikan kamera';show('','Arahkan ke QR…');tick();
+}
+$('#lv').onclick=()=>stream?stopCam():openCam();
+$('#fl').onclick=()=>{facing=facing==='user'?'environment':'user';openCam()};
 addEventListener('pagehide',stopCam);
 
 /* 3) Ketik/tempel kode atau alat scan USB */
