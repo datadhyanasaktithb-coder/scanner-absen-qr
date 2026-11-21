@@ -18,7 +18,7 @@ ul{list-style:none;padding:0;font-size:.85rem}li{background:var(--card);padding:
 <div class="row"><input id="m" type="text" placeholder="Atau ketik/tempel kode QR (alat scan USB)" autocomplete="off"><button class="btn" id="mk" style="flex:none">Kirim</button></div>
 <ul id="log"></ul>
 <script>
-const API=https://script.google.com/macros/s/AKfycbwc_8x1yOKJzqNVjDoqELT4VAuqgY1myzV91Kar8tYUQ9Wp7IStcxg-n5gfAhy4iMDlQg/exec
+const API='https://script.google.com/macros/s/AKfycbwc_8x1yOKJzqNVjDoqELT4VAuqgY1myzV91Kar8tYUQ9Wp7IStcxg-n5gfAhy4iMDlQg/exec'
 const $=s=>document.querySelector(s);
 let busy=false,stream=null,raf=0;
 const beep=ok=>{try{const c=new AudioContext(),o=c.createOscillator();o.frequency.value=ok?880:220;o.connect(c.destination);o.start();setTimeout(()=>o.stop(),150)}catch{}};
